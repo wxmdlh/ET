@@ -9,6 +9,7 @@ namespace ET
 		Mono = 1,
 		ILRuntime = 2,
 		Reload = 3,
+		MyTest=4,
 	}
 	
 	public class Init: MonoBehaviour
