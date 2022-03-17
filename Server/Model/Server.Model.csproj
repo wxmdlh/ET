@@ -30,6 +30,22 @@
       <Link>Demo\Unit\UnitType.cs</Link>
     </Compile>
 
+    <Compile Include="..\..\Unity\Codes\Model\LHTest\Computer.cs">
+      <Link>LHTest\Computer.cs</Link>
+    </Compile>
+
+    <Compile Include="..\..\Unity\Codes\Model\LHTest\PCCaseComponent.cs">
+      <Link>LHTest\PCCaseComponent.cs</Link>
+    </Compile>
+
+    <Compile Include="..\..\Unity\Codes\Model\LHTest\PCKeyBoardComponent.cs">
+      <Link>LHTest\PCKeyBoardComponent.cs</Link>
+    </Compile>
+
+    <Compile Include="..\..\Unity\Codes\Model\LHTest\PCMonitorsComponent.cs">
+      <Link>LHTest\PCMonitorsComponent.cs</Link>
+    </Compile>
+
     <Compile Include="..\..\Unity\Codes\Model\Module\Recast\**\*.cs">
       <Link>Module\Recast\%(RecursiveDir)%(FileName)%(Extension)</Link>
     </Compile>
