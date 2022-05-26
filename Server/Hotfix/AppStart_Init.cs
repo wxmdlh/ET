@@ -29,11 +29,11 @@ namespace ET
             
             Game.Scene.AddComponent<NetThreadComponent>();
 
-            Computer computer = Game.Scene.AddChild<Computer>();
-            computer.AddComponent<PCCaseComponent>();
-            computer.AddComponent<PCMonitorsComponent>();
-            computer.AddComponent<PCKeyBoardComponent>();
-            computer.Start();
+            // Computer computer = Game.Scene.AddChild<Computer>();
+            // computer.AddComponent<PCCaseComponent>();
+            // computer.AddComponent<PCMonitorsComponent>();
+            // computer.AddComponent<PCKeyBoardComponent>();
+            // computer.Start();
             
             Game.Scene.AddComponent<NavmeshComponent, Func<string, byte[]>>(RecastFileReader.Read);
 
