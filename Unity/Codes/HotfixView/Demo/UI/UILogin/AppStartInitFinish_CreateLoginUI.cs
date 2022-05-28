@@ -8,12 +8,15 @@ namespace ET
 		{
 			await UIHelper.Create(args.ZoneScene, UIType.UILogin, UILayer.Mid);
 
-			// Computer computer = args.ZoneScene.AddChild<Computer>();
-			// computer.AddComponent<PCCaseComponent>();
-			// computer.AddComponent<PCMonitorsComponent>();
-			// computer.AddComponent<PCKeyBoardComponent>();
-			//
-			// computer.Start();
+			Computer computer = args.ZoneScene.AddChild<Computer>();
+			computer.AddComponent<PCCaseComponent>();
+			computer.AddComponent<PCMonitorsComponent>();
+			computer.AddComponent<PCKeyBoardComponent>();
+			
+			computer.Start();
+
+			await TimerComponent.Instance.WaitAsync(3000);
+			computer.Dispose();
 
 			Log.Debug("aaaaaaaaaaaaaaaaaaaaa"); 
 			await TestAsync();
