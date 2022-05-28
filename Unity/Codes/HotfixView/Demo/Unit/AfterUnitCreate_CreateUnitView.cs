@@ -6,6 +6,25 @@ namespace ET
     {
         protected override async ETTask Run(EventType.AfterUnitCreate args)
         {
+
+            switch (args.Unit.UnitType)
+            {
+                case UnitType.Player:
+                    
+                    break;
+                case UnitType.Box:
+                    
+                    break;
+                case UnitType.Monster:
+                    
+                    break;
+                case UnitType.DropItem:
+                    
+                    break;
+                default:
+                    break;
+
+            }
             // Unit View层
             // 这里可以改成异步加载，demo就不搞了
             GameObject bundleGameObject = (GameObject)ResourcesComponent.Instance.GetAsset("Unit.unity3d", "Unit");
