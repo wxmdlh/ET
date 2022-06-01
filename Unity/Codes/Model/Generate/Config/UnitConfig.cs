@@ -83,6 +83,8 @@ namespace ET
 		public int Height { get; set; }
 		[ProtoMember(8)]
 		public int Weight { get; set; }
+		[ProtoMember(9)]
+		public int[] Direct { get; set; }
 
 	}
 }
