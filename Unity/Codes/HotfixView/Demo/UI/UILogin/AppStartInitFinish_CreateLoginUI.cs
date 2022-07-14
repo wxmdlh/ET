@@ -14,8 +14,8 @@ namespace ET
 			
 			// Game.EventSystem.Publish(new EventType.InstallComputer(){computer = computer});
 			// Game.EventSystem.PublishAsync(new EventType.InstallComputer(){computer = computer}).Coroutine();
-			await Game.EventSystem.PublishAsync(new EventType.InstallComputer(){computer = computer});
-			computer.Start();
+			// await Game.EventSystem.PublishAsync(new EventType.InstallComputer(){computer = computer});
+			// computer.Start();
 			
 			// computer.AddComponent<PCCaseComponent>();
 			// computer.AddComponent<PCMonitorsComponent>();
@@ -48,13 +48,36 @@ namespace ET
 			// UnitConfig heightConfig = UnitConfigCategory.Instance.GetUnitConfigByHeight(178);
 			// Log.Debug(heightConfig.Name);
 
+			Log.Debug("aaaaaaaaaaaaaaa");
+			// await TestAsync();
+			// this.TestAsync().Coroutine();
+			ETCancellationToken cancellationToken = new ETCancellationToken();
+			TestCancelAsync(cancellationToken).Coroutine();
+			Log.Debug("bbbbbbbbbbbbbbbb");
+			cancellationToken.Cancel();
 		}
 
 		private async ETTask TestAsync()
 		{
 			Log.Debug("111111111111111111111");
-			await TimerComponent.Instance.WaitAsync(1000);
+			await TimerComponent.Instance.WaitAsync(10000);
 			Log.Debug("22222222222222222222222");
+		}
+
+		public async ETTask TestCancelAsync(ETCancellationToken token)
+		{
+			Log.Debug("开始游戏");
+
+			var ret = await TimerComponent.Instance.WaitAsync(3000, token);
+
+			if (ret)
+			{
+				Log.Debug("游戏结束");
+			}
+			else
+			{
+				Log.Debug("游戏停止");
+			}
 		}
 	}
 }
