@@ -31,6 +31,18 @@
         <Compile Include="..\..\Server\Model\Base\StructBsonSerialize.cs">
           <Link>Base\StructBsonSerialize.cs</Link>
         </Compile>
+        <Compile Include="..\..\Unity\Codes\Model\LHTest\Computer.cs">
+          <Link>LHTest\Computer.cs</Link>
+        </Compile>
+        <Compile Include="..\..\Unity\Codes\Model\LHTest\PCCaseComponent.cs">
+          <Link>LHTest\PCCaseComponent.cs</Link>
+        </Compile>
+        <Compile Include="..\..\Unity\Codes\Model\LHTest\PCKeyBoardComponent.cs">
+          <Link>LHTest\PCKeyBoardComponent.cs</Link>
+        </Compile>
+        <Compile Include="..\..\Unity\Codes\Model\LHTest\PCMonitorsComponent.cs">
+          <Link>LHTest\PCMonitorsComponent.cs</Link>
+        </Compile>
         <Compile Include="..\..\Unity\Codes\Model\Module\Config\**\*.cs">
             <Link>Module\Config\%(RecursiveDir)%(FileName)%(Extension)</Link>
         </Compile>
