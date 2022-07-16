@@ -10,7 +10,7 @@ namespace ET
 		{
 			await UIHelper.Create(args.ZoneScene, UIType.UILogin, UILayer.Mid);
 
-			Computer computer = args.ZoneScene.AddChild<Computer>();
+			// Computer computer = args.ZoneScene.AddChild<Computer>();
 			
 			// Game.EventSystem.Publish(new EventType.InstallComputer(){computer = computer});
 			// Game.EventSystem.PublishAsync(new EventType.InstallComputer(){computer = computer}).Coroutine();
@@ -48,13 +48,14 @@ namespace ET
 			// UnitConfig heightConfig = UnitConfigCategory.Instance.GetUnitConfigByHeight(178);
 			// Log.Debug(heightConfig.Name);
 
-			Log.Debug("aaaaaaaaaaaaaaa");
-			// await TestAsync();
-			// this.TestAsync().Coroutine();
-			ETCancellationToken cancellationToken = new ETCancellationToken();
-			TestCancelAsync(cancellationToken).Coroutine();
-			Log.Debug("bbbbbbbbbbbbbbbb");
-			cancellationToken.Cancel();
+			//ETTask相关学习
+			// Log.Debug("aaaaaaaaaaaaaaa");
+			// // await TestAsync();
+			// // this.TestAsync().Coroutine();
+			// ETCancellationToken cancellationToken = new ETCancellationToken();
+			// TestCancelAsync(cancellationToken).Coroutine();
+			// Log.Debug("bbbbbbbbbbbbbbbb");
+			// cancellationToken.Cancel();
 		}
 
 		private async ETTask TestAsync()
