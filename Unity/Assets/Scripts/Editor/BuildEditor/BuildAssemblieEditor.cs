@@ -13,99 +13,167 @@ namespace ET
     {
         private const string CodeDir = "Assets/Bundles/Code/";
 
-        [MenuItem("Tools/Build/EnableAutoBuildCodeDebug _F1")]
-        public static void SetAutoBuildCode()
+        public static void BuildCode(CodeOptimization codeOptimization, GlobalConfig globalConfig)
         {
-            PlayerPrefs.SetInt("AutoBuild", 1);
-            ShowNotification("AutoBuildCode Enabled");
-        }
-        
-        [MenuItem("Tools/Build/DisableAutoBuildCodeDebug _F2")]
-        public static void CancelAutoBuildCode()
-        {
-            PlayerPrefs.DeleteKey("AutoBuild");
-            ShowNotification("AutoBuildCode Disabled");
-        }
-
-        [MenuItem("Tools/Build/BuildCodeDebug _F5")]
-        public static void BuildCodeDebug()
-        {
-            BuildAssemblieEditor.BuildMuteAssembly("Code", new []
+            List<string> codes;
+            switch (globalConfig.CodeMode)
             {
-                "../Codes/Generate/Client/",
-                "../Codes/Model/Share/",
-                "../Codes/Hotfix/Share/",
-                "../Codes/Model/Client/",
-                "../Codes/ModelView/Client/",
-                "../Codes/Hotfix/Client/",
-                "../Codes/HotfixView/Client/"
-            }, Array.Empty<string>(), CodeOptimization.Debug);
+                case CodeMode.Client:
+                    codes = new List<string>()
+                    {
+                        "Assets/Scripts/Codes/Model/Generate/Client",
+                        "Assets/Scripts/Codes/Model/Share",
+                        "Assets/Scripts/Codes/Hotfix/Share",
+                        "Assets/Scripts/Codes/Model/Client",
+                        "Assets/Scripts/Codes/ModelView/Client",
+                        "Assets/Scripts/Codes/Hotfix/Client",
+                        "Assets/Scripts/Codes/HotfixView/Client"
+                    };
+                    break;
+                case CodeMode.Server:
+                    codes = new List<string>()
+                    {
+                        "Assets/Scripts/Codes/Model/Generate/Server",
+                        "Assets/Scripts/Codes/Model/Share",
+                        "Assets/Scripts/Codes/Hotfix/Share",
+                        "Assets/Scripts/Codes/Model/Server",
+                        "Assets/Scripts/Codes/Hotfix/Server",
+                        "Assets/Scripts/Codes/Model/Client",
+                        "Assets/Scripts/Codes/Hotfix/Client",
+                    };
+                    break;
+                case CodeMode.ClientServer:
+                    codes = new List<string>()
+                    {
+                        "Assets/Scripts/Codes/Model/Generate/Server",
+                        "Assets/Scripts/Codes/Model/Share",
+                        "Assets/Scripts/Codes/Hotfix/Share",
+                        "Assets/Scripts/Codes/Model/Client",
+                        "Assets/Scripts/Codes/ModelView/Client",
+                        "Assets/Scripts/Codes/Hotfix/Client",
+                        "Assets/Scripts/Codes/HotfixView/Client",
+                        "Assets/Scripts/Codes/Model/Server",
+                        "Assets/Scripts/Codes/Hotfix/Server",
+                    };
+                    break;
+                default:
+                    throw new Exception("not found enum");
+            }
+
+            BuildAssemblieEditor.BuildMuteAssembly("Code", codes, Array.Empty<string>(), codeOptimization, globalConfig.CodeMode);
 
             AfterCompiling();
             
             AssetDatabase.Refresh();
-        }
-        
-        [MenuItem("Tools/Build/BuildCodeRelease _F6")]
-        public static void BuildCodeRelease()
-        {
-            BuildAssemblieEditor.BuildMuteAssembly("Code", new []
-            {
-                "../Codes/Generate/Client/",
-                "../Codes/Model/Share/",
-                "../Codes/Hotfix/Share/",
-                "../Codes/Model/Client/",
-                "../Codes/ModelView/Client/",
-                "../Codes/Hotfix/Client/",
-                "../Codes/HotfixView/Client/"
-            }, Array.Empty<string>(), CodeOptimization.Release);
-
-            AfterCompiling();
             
-            AssetDatabase.Refresh();
+            //反射获取当前Game视图，提示编译完成
+            ShowNotification("Build Code Success");
         }
         
-        [MenuItem("Tools/Build/BuildData _F7")]
-        public static void BuildData()
+        public static void BuildModel(CodeOptimization codeOptimization, GlobalConfig globalConfig)
         {
-            BuildAssemblieEditor.BuildMuteAssembly("Data", new []
+            List<string> codes;
+            
+            switch (globalConfig.CodeMode)
             {
-                "../Codes/Generate/Client/",
-                "../Codes/Model/Share/",
-                "../Codes/Model/Client/",
-                "../Codes/ModelView/Client/",
-            }, Array.Empty<string>(), CodeOptimization.Debug);
+                case CodeMode.Client:
+                    codes = new List<string>()
+                    {
+                        "Assets/Scripts/Codes/Model/Generate/Client/",
+                        "Assets/Scripts/Codes/Model/Share/",
+                        "Assets/Scripts/Codes/Model/Client/",
+                        "Assets/Scripts/Codes/ModelView/Client/",
+                    };
+                    break;
+                case CodeMode.Server:
+                    codes = new List<string>()
+                    {
+                        "Assets/Scripts/Codes/Model/Generate/Server/",
+                        "Assets/Scripts/Codes/Model/Share/",
+                        "Assets/Scripts/Codes/Model/Server/",
+                        "Assets/Scripts/Codes/Model/Client/",
+                    };
+                    break;
+                case CodeMode.ClientServer:
+                    codes = new List<string>()
+                    {
+                        "Assets/Scripts/Codes/Model/Share/",
+                        "Assets/Scripts/Codes/Model/Client/",
+                        "Assets/Scripts/Codes/ModelView/Client/",
+                        "Assets/Scripts/Codes/Model/Generate/Server/",
+                        "Assets/Scripts/Codes/Model/Server/",
+                    };
+                    break;
+                default:
+                    throw new Exception("not found enum");
+            }
+            
+            BuildAssemblieEditor.BuildMuteAssembly("Model", codes, Array.Empty<string>(), codeOptimization, globalConfig.CodeMode);
+            
+            //反射获取当前Game视图，提示编译完成
+            ShowNotification("Build Model Success");
         }
         
         
-        [MenuItem("Tools/Build/BuildLogic _F8")]
-        public static void BuildLogic()
+        public static void BuildHotfix(CodeOptimization codeOptimization, GlobalConfig globalConfig)
         {
-            string[] logicFiles = Directory.GetFiles(Define.BuildOutputDir, "Logic_*");
+            string[] logicFiles = Directory.GetFiles(Define.BuildOutputDir, "Hotfix_*");
             foreach (string file in logicFiles)
             {
                 File.Delete(file);
             }
             
-            int random = RandomHelper.RandomNumber(100000000, 999999999);
-            string logicFile = $"Logic_{random}";
+            int random = RandomGenerator.Instance.RandomNumber(100000000, 999999999);
+            string logicFile = $"Hotfix_{random}";
             
-            BuildAssemblieEditor.BuildMuteAssembly(logicFile, new []
+            List<string> codes;
+            switch (globalConfig.CodeMode)
             {
-                "../Codes/Hotfix/Share/",
-                "../Codes/Hotfix/Client/",
-                "../Codes/HotfixView/Client/"
-            }, new[]{Path.Combine(Define.BuildOutputDir, "Data.dll")}, CodeOptimization.Debug);
+                case CodeMode.Client:
+                    codes = new List<string>()
+                    {
+                        "Assets/Scripts/Codes/Hotfix/Share/",
+                        "Assets/Scripts/Codes/Hotfix/Client/",
+                        "Assets/Scripts/Codes/HotfixView/Client/",
+                    };
+                    break;
+                case CodeMode.Server:
+                    codes = new List<string>()
+                    {
+                        "Assets/Scripts/Codes/Hotfix/Share/",
+                        "Assets/Scripts/Codes/Hotfix/Server/",
+                        "Assets/Scripts/Codes/Hotfix/Client/",
+                    };
+                    break;
+                case CodeMode.ClientServer:
+                    codes = new List<string>()
+                    {
+                        "Assets/Scripts/Codes/Hotfix/Share/",
+                        "Assets/Scripts/Codes/Hotfix/Client/",
+                        "Assets/Scripts/Codes/HotfixView/Client/",
+                        "Assets/Scripts/Codes/Hotfix/Server/",
+                    };
+                    break;
+                default:
+                    throw new Exception("not found enum");
+            }
+            
+            BuildAssemblieEditor.BuildMuteAssembly(logicFile, codes, new[]{Path.Combine(Define.BuildOutputDir, "Model.dll")}, codeOptimization, globalConfig.CodeMode);
+            
+            //反射获取当前Game视图，提示编译完成
+            ShowNotification("Build Hotfix Success");
         }
 
-        private static void BuildMuteAssembly(string assemblyName, string[] CodeDirectorys, string[] additionalReferences, CodeOptimization codeOptimization)
-        {
+        private static void BuildMuteAssembly(
+                string assemblyName, List<string> CodeDirectorys, 
+                string[] additionalReferences, CodeOptimization codeOptimization, CodeMode codeMode = CodeMode.Client)
+        {            
             if (!Directory.Exists(Define.BuildOutputDir))
             {
                 Directory.CreateDirectory(Define.BuildOutputDir);
             }
             List<string> scripts = new List<string>();
-            for (int i = 0; i < CodeDirectorys.Length; i++)
+            for (int i = 0; i < CodeDirectorys.Count; i++)
             {
                 DirectoryInfo dti = new DirectoryInfo(CodeDirectorys[i]);
                 FileInfo[] fileInfos = dti.GetFiles("*.cs", System.IO.SearchOption.AllDirectories);
@@ -124,8 +192,24 @@ namespace ET
 
             AssemblyBuilder assemblyBuilder = new AssemblyBuilder(dllPath, scripts.ToArray());
             
+            if (codeMode == CodeMode.Client)
+            {
+                assemblyBuilder.excludeReferences = new string[]
+                {
+                    "DnsClient.dll", 
+                    "MongoDB.Driver.Core.dll", 
+                    "MongoDB.Driver.dll", 
+                    "MongoDB.Driver.Legacy.dll", 
+                    "MongoDB.Libmongocrypt.dll", 
+                    "SharpCompress.dll", 
+                    "System.Buffers.dll",
+                    "System.Runtime.CompilerServices.Unsafe.dll",
+                    "System.Text.Encoding.CodePages.dll"
+                };
+            }
+            
             //启用UnSafe
-            //assemblyBuilder.compilerOptions.AllowUnsafeCode = true;
+            assemblyBuilder.compilerOptions.AllowUnsafeCode = true;
 
             BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(EditorUserBuildSettings.activeBuildTarget);
 
@@ -165,7 +249,8 @@ namespace ET
                     {
                         if (compilerMessages[i].type == CompilerMessageType.Error)
                         {
-                            Debug.LogError(compilerMessages[i].message);
+                            string filename = Path.GetFullPath(compilerMessages[i].file);
+                            Debug.LogError($"{compilerMessages[i].message} (at <a href=\"file:///{filename}/\" line=\"{compilerMessages[i].line}\">{Path.GetFileName(filename)}</a>)");
                         }
                     }
                 }
@@ -177,18 +262,16 @@ namespace ET
                 Debug.LogErrorFormat("build fail：" + assemblyBuilder.assemblyPath);
                 return;
             }
+            
+            while (EditorApplication.isCompiling)
+            {
+                // 主线程sleep并不影响编译线程
+                Thread.Sleep(1);
+            }
         }
 
         private static void AfterCompiling()
         {
-            while (EditorApplication.isCompiling)
-            {
-                Debug.Log("Compiling wait1");
-                // 主线程sleep并不影响编译线程
-                Thread.Sleep(1000);
-                Debug.Log("Compiling wait2");
-            }
-            
             Debug.Log("Compiling finish");
 
             Directory.CreateDirectory(CodeDir);
@@ -206,8 +289,6 @@ namespace ET
             Debug.Log("set assetbundle success!");
             
             Debug.Log("build success!");
-            //反射获取当前Game视图，提示编译完成
-            ShowNotification("Build Code Success");
         }
 
         public static void ShowNotification(string tips)

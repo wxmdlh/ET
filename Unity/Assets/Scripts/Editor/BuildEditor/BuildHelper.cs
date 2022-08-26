@@ -1,6 +1,7 @@
 ﻿using System.IO;
-
+using System.Linq;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEngine;
 
 namespace ET
@@ -10,6 +11,34 @@ namespace ET
         private const string relativeDirPrefix = "../Release";
 
         public static string BuildFolder = "../Release/{0}/StreamingAssets/";
+
+        
+#if ENABLE_CODES
+        [MenuItem("ET/ChangeDefine/Remove ENABLE_CODES")]
+#else
+        [MenuItem("ET/ChangeDefine/Add ENABLE_CODES")]
+#endif
+        public static void EnableCodes()
+        {
+            string defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            var ss = defines.Split(';').ToList();
+#if ENABLE_CODES
+            if (!ss.Contains("ENABLE_CODES"))
+            {
+                return;
+            }
+            ss.Remove("ENABLE_CODES");
+#else
+            if (ss.Contains("ENABLE_CODES"))
+            {
+                return;
+            }
+            ss.Add("ENABLE_CODES");
+#endif
+            defines = string.Join(";", ss);
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, defines);
+            AssetDatabase.SaveAssets();
+        }
 
         public static void Build(PlatformType type, BuildAssetBundleOptions buildAssetBundleOptions, BuildOptions buildOptions, bool isBuildExe, bool isContainAB, bool clearFolder)
         {
@@ -39,17 +68,13 @@ namespace ET
             if (clearFolder && Directory.Exists(fold))
             {
                 Directory.Delete(fold, true);
-                Directory.CreateDirectory(fold);
             }
-            else
-            {
-                Directory.CreateDirectory(fold);
-            }
+            Directory.CreateDirectory(fold);
 
-            UnityEngine.Debug.Log("开始资源打包");
+            UnityEngine.Debug.Log("start build assetbundle");
             BuildPipeline.BuildAssetBundles(fold, buildAssetBundleOptions, buildTarget);
 
-            UnityEngine.Debug.Log("完成资源打包");
+            UnityEngine.Debug.Log("finish build assetbundle");
 
             if (isContainAB)
             {
@@ -63,9 +88,9 @@ namespace ET
                 string[] levels = {
                     "Assets/Scenes/Init.unity",
                 };
-                UnityEngine.Debug.Log("开始EXE打包");
+                UnityEngine.Debug.Log("start build exe");
                 BuildPipeline.BuildPlayer(levels, $"{relativeDirPrefix}/{exeName}", buildTarget, buildOptions);
-                UnityEngine.Debug.Log("完成exe打包");
+                UnityEngine.Debug.Log("finish build exe");
             }
             else
             {

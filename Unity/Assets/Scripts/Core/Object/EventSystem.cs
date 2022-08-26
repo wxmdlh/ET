@@ -7,7 +7,7 @@ namespace ET
 {
     using OneTypeSystems = UnOrderMultiMap<Type, object>;
 
-    public sealed class EventSystem: IDisposable
+    public class EventSystem: Singleton<EventSystem>
     {
         private class TypeSystems
         {
@@ -75,21 +75,6 @@ namespace ET
             }
         }
 
-        private static EventSystem instance;
-
-        public static EventSystem Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    instance = new EventSystem();
-                }
-
-                return instance;
-            }
-        }
-
         private readonly Dictionary<long, Entity> allEntities = new();
 
         private readonly Dictionary<string, Type> allTypes = new();
@@ -98,7 +83,7 @@ namespace ET
 
         private readonly Dictionary<Type, List<EventInfo>> allEvents = new();
         
-        private object[] allCallbacks;
+        private Dictionary<Type, Dictionary<int, object>> allCallbacks = new Dictionary<Type, Dictionary<int, object>>(); 
 
         private TypeSystems typeSystems = new();
 
@@ -112,7 +97,7 @@ namespace ET
             Max = 3,
         }
 
-        private EventSystem()
+        public EventSystem()
         {
             for (int i = 0; i < this.twoQueues.Length; i++)
             {
@@ -207,11 +192,12 @@ namespace ET
                 }
             }
 
-            this.allCallbacks = new object[10000];
+            this.allCallbacks = new Dictionary<Type, Dictionary<int, object>>();
             foreach (Type type in types[typeof (CallbackAttribute)])
             {
                 object obj = Activator.CreateInstance(type);
-                if (obj == null)
+                ICallbackType iCallbackType = obj as ICallbackType;
+                if (iCallbackType == null)
                 {
                     throw new Exception($"type not is callback: {type.Name}");
                 }
@@ -219,13 +205,23 @@ namespace ET
                 object[] attrs = type.GetCustomAttributes(typeof(CallbackAttribute), false);
                 foreach (object attr in attrs)
                 {
-                    CallbackAttribute callbackAttribute = attr as CallbackAttribute;
-
-                    if (this.allCallbacks[callbackAttribute.Type] != null)
+                    if (!this.allCallbacks.TryGetValue(iCallbackType.Type, out var dict))
                     {
-                        throw new Exception($"action type duplicate: {callbackAttribute.Type}");
+                        dict = new Dictionary<int, object>();
+                        this.allCallbacks.Add(iCallbackType.Type, dict);
                     }
-                    this.allCallbacks[callbackAttribute.Type] = obj;
+                    
+                    CallbackAttribute callbackAttribute = attr as CallbackAttribute;
+                    
+                    try
+                    {
+                        dict.Add(callbackAttribute.Id, obj);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception($"action type duplicate: {iCallbackType.Type.Name} {callbackAttribute.Id}", e);
+                    }
+                    
                 }
             }
         }
@@ -668,7 +664,7 @@ namespace ET
             twoQueue.Swap();
         }
 
-        public async ETTask PublishAsync<E, T>(E entity, T a) where E: Entity where T : struct
+        public async ETTask PublishAsync<T>(Scene scene, T a) where T : struct
         {
             List<EventInfo> iEvents;
             if (!this.allEvents.TryGetValue(typeof(T), out iEvents))
@@ -676,36 +672,35 @@ namespace ET
                 return;
             }
 
-            using (ListComponent<ETTask> list = ListComponent<ETTask>.Create())
+            using ListComponent<ETTask> list = ListComponent<ETTask>.Create();
+            
+            foreach (EventInfo eventInfo in iEvents)
             {
-                foreach (EventInfo eventInfo in iEvents)
+                if (scene.SceneType != eventInfo.SceneType && eventInfo.SceneType != SceneType.None)
                 {
-                    if (entity.DomainScene().SceneType != eventInfo.SceneType)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
                     
-                    if (!(eventInfo.IEvent is AEvent<E, T> aEvent))
-                    {
-                        Log.Error($"event error: {eventInfo.IEvent.GetType().Name}");
-                        continue;
-                    }
-
-                    list.Add(aEvent.Handle(entity, a));
+                if (!(eventInfo.IEvent is AEvent<T> aEvent))
+                {
+                    Log.Error($"event error: {eventInfo.IEvent.GetType().Name}");
+                    continue;
                 }
 
-                try
-                {
-                    await ETTaskHelper.WaitAll(list);
-                }
-                catch (Exception e)
-                {
-                    Log.Error(e);
-                }
+                list.Add(aEvent.Handle(scene, a));
+            }
+
+            try
+            {
+                await ETTaskHelper.WaitAll(list);
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
             }
         }
 
-        public void Publish<E, T>(E entity, T a) where E: Entity where T : struct
+        public void Publish<T>(Scene scene, T a)where T : struct
         {
             List<EventInfo> iEvents;
             if (!this.allEvents.TryGetValue(typeof (T), out iEvents))
@@ -713,73 +708,63 @@ namespace ET
                 return;
             }
 
-            SceneType sceneType = entity.DomainScene().SceneType;
+            SceneType sceneType = scene.SceneType;
             foreach (EventInfo eventInfo in iEvents)
             {
-                if (sceneType != eventInfo.SceneType)
+                if (sceneType != eventInfo.SceneType && eventInfo.SceneType != SceneType.None)
                 {
                     continue;
                 }
 
                 
-                if (!(eventInfo.IEvent is AEvent<E, T> aEvent))
+                if (!(eventInfo.IEvent is AEvent<T> aEvent))
                 {
                     Log.Error($"event error: {eventInfo.IEvent.GetType().Name}");
                     continue;
                 }
                 
-                aEvent.Handle(entity, a).Coroutine();
+                aEvent.Handle(scene, a).Coroutine();
             }
         }
         
-        public void Callback(int type)
+        public void Callback<A>(A args) where A: struct, ICallback
         {
-            (this.allCallbacks[type] as IAction).Handle();
-        }
+            if (!this.allCallbacks.TryGetValue(typeof(A), out var callbackHandlers))
+            {
+                throw new Exception($"Callback error: {typeof(A).Name}");
+            }
+            if (!callbackHandlers.TryGetValue(args.Id, out var callbackHandler))
+            {
+                throw new Exception($"Callback error: {typeof(A).Name} {args.Id}");
+            }
 
-        public void Callback<A>(int type, A a)
-        {
-            (this.allCallbacks[type] as IAction<A>).Handle(a);
+            var aCallbackHandler = callbackHandler as ACallbackHandler<A>;
+            if (aCallbackHandler == null)
+            {
+                throw new Exception($"Callback error, not ACallbackHandler: {typeof(A).Name} {args.Id}");
+            }
+            
+            aCallbackHandler.Handle(args);
         }
         
-        public void Callback<A, B>(int type, A a, B b)
+        public T Callback<A, T>(A args) where A: struct, ICallback
         {
-            (this.allCallbacks[type] as IAction<A, B>).Handle(a, b);
-        }
-        
-        public void Callback<A, B, C>(int type, A a, B b, C c)
-        {
-            (this.allCallbacks[type] as IAction<A, B, C>).Handle(a, b, c);
-        }
-        
-        public void Callback<A, B, C, D>(int type, A a, B b, C c, D d)
-        {
-            (this.allCallbacks[type] as IAction<A, B, C, D>).Handle(a, b, c, d);
-        }
-        
-        public T Callback<T>(int type)
-        {
-            return (this.allCallbacks[type] as IFunc<T>).Handle();
-        }
+            if (!this.allCallbacks.TryGetValue(typeof(A), out var callbackHandlers))
+            {
+                throw new Exception($"ResultCallback error: {typeof(A).Name}");
+            }
+            if (!callbackHandlers.TryGetValue(args.Id, out var callbackHandler))
+            {
+                throw new Exception($"ResultCallback error: {typeof(A).Name} {args.Id}");
+            }
 
-        public T Callback<A, T>(int type, A a)
-        {
-            return (this.allCallbacks[type] as IFunc<A, T>).Handle(a);
-        }
-        
-        public T Callback<A, B, T>(int type, A a, B b)
-        {
-            return (this.allCallbacks[type] as IFunc<A, B, T>).Handle(a, b);
-        }
-        
-        public T Callback<A, B, C, T>(int type, A a, B b, C c)
-        {
-            return (this.allCallbacks[type] as IFunc<A, B, C, T>).Handle(a, b, c);
-        }
-        
-        public T Callback<A, B, C, D, T>(int type, A a, B b, C c, D d)
-        {
-            return (this.allCallbacks[type] as IFunc<A, B, C, D, T>).Handle(a, b, c, d);
+            var aCallbackHandler = callbackHandler as ACallbackHandler<A, T>;
+            if (aCallbackHandler == null)
+            {
+                throw new Exception($"ResultCallback error, not AResultCallbackHandler: {typeof(T).Name} {args.Id}");
+            }
+            
+            return aCallbackHandler.Handle(args);
         }
 
         public override string ToString()
@@ -839,11 +824,6 @@ namespace ET
             }
 
             return sb.ToString();
-        }
-
-        public void Dispose()
-        {
-            instance = null;
         }
     }
 }

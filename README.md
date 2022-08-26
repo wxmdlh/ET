@@ -12,14 +12,15 @@
 
 # [分析器说明](https://www.yuque.com/u28961999/yms0nt/)
 
-# ET7开发中，使用master分支，ET6改成release6.0分支
+# ET7 发布! 18岁亦菲
 1. 调整结构，机器人工程与服务器合并，更易使用，一个进程同时可以做server，也能创建机器人，真正的ALL IN ONE! -- 已实现  
-2. 增加软路由，可以防各种网络攻击而不影响正常玩家，网游必备！-- 已实现  
-3. 各种事件跟网络消息订阅带上DomainSceneType，更精确，更不容易出错 -- 已实现  
-4. sj兄弟添加了各种分析器，分析器保证了写出的代码必须符合ET规范，否则编译不通过！（这点ET6也增加上了） -- 已实现  
-5. 利用Linux fork写时复制的机制减少配置文件内存占用（可能GC整理内存会走不通，待研究）-- 暂未实现  
-6. ET7已经去除热更新，请大家自己选择接入,接入huatuo或者ILRuntime都非常简单  
-
+2. 客户端跟服务端合并，服务端代码全部放在了客户端，客户端中可以带一个服务端，开发超级方便，服务端发布的时候可以选择发布成Dotnet也可以发布成UnityServer，终极All IN ONE  -- 已实现  
+3. Entity可视化，客户端跟服务端所有的Entity都实现了可视化，开启ENABLE_CODES宏，运行游戏，查看Hierarchy面板，展开Init/Global/Scene(Process)即可看到 -- 已实现  
+4. 因为所有代码都在Unity中，所以开发ET插件变得非常容易，直接使用Unity导入导出即可  -- 已实现  
+5. 增加软路由，可以防各种网络攻击而不影响正常玩家，网游必备！-- 已实现  
+6. 各种事件跟网络消息订阅带上DomainSceneType，更精确，更不容易出错 -- 已实现  
+7. sj兄弟添加了各种分析器，分析器保证了写出的代码必须符合ET规范，否则编译不通过！（这点ET6也增加上了） -- 已实现  
+8. ET7已经去除客户端热更新，请大家自己选择接入,接入huatuo或者ILRuntime都非常简单, 注意！(不要混淆客户端热更新跟服务端热更新，服务端热更新，ET一直都有)  
 
 
 # ET6 发布！ET6相比ET5有巨大变化，可以说是凤姐变亦菲，6.0拥有如下惊人的特点
@@ -110,7 +111,7 @@ ET框架是一个强大灵活的分布式服务端架构，完全可以满足绝
 群友分享：  
 [行为树与fgui分支(Duke Chiang开发维护)](https://github.com/DukeChiang/ET.git)   
 [ET学习笔记系列(烟雨迷离半世殇写)](https://www.lfzxb.top/)   
-[ET学习笔记系列(咲夜詩写)](https://acgmart.com/unity/)   
+[图形渲染与ET学习笔记(咲夜詩写)](https://acgmart.com/)   
 [框架服务端运行流程](http://www.cnblogs.com/fancybit/p/et1.html)  
 [ET启动配置](http://www.cnblogs.com/fancybit/p/et2.html)  
 [框架demo介绍](http://www.jianshu.com/p/f2ea0d26c7c1)  
@@ -134,7 +135,7 @@ ET框架是一个强大灵活的分布式服务端架构，完全可以满足绝
 群友demo：  
 1. [斗地主（客户端服务端）](https://github.com/Viagi/LandlordsCore)  
 2. [背包系统](https://gitee.com/ECPS_admin/planc)  
-3. [ET小游戏合集](https://github.com/Acgmart/ET-MultiplyDemos)  
+3. [移动端渲染技术demo](https://github.com/Acgmart/Sekia_TechDemo)  
 
 
 

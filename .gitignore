@@ -66,3 +66,7 @@ Server/.DS_Store
 
 /Unity/ProjectSettings/RiderScriptEditorPersistedState.asset
 /Unity/Unity.Core.csproj
+/Unity/UserSettings
+/Unity/Unity.Codes.csproj
+/Unity/Unity.Ignore.csproj
+Publish/
