@@ -4,7 +4,7 @@ namespace ET
 {
     public class AfterUnitCreate_CreateUnitView: AEvent<EventType.AfterUnitCreate>
     {
-        protected override async ETTask Run(EventType.AfterUnitCreate args)
+        protected override void Run(EventType.AfterUnitCreate args)
         {
 
             switch (args.Unit.UnitType)
@@ -34,7 +34,6 @@ namespace ET
             go.transform.position = args.Unit.Position;
             args.Unit.AddComponent<GameObjectComponent>().GameObject = go;
             args.Unit.AddComponent<AnimatorComponent>();
-            await ETTask.CompletedTask;
         }
     }
 }
